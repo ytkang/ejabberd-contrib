@@ -16,7 +16,8 @@
   mod_options/1
 ]).
 
--import(bloom_gen_server, [start/0, stop/0, member/1]).
+% -import(bloom_gen_server, [start/0, stop/0, member/1]).
+-import(banword_gen_server, [start/0, stop/0, member/1]).
 -import(nomalize_leet_gen_server, [normalize/1]).
 
 getMessageLang(Msg) ->
@@ -33,7 +34,7 @@ censorWord({Lang, Word} = _MessageTerm) ->
   % we need unicode characters to normlize the word
   NormalizedWord = normalize_leet_gen_server:normalize({Lang, unicode:characters_to_list(list_to_binary(Word))}),
   % we need bytewise format for bloom lookup
-  IsBadWord = bloom_gen_server:member({Lang, binary_to_list(unicode:characters_to_binary(NormalizedWord))}),
+  IsBadWord = banword_gen_server:member({Lang, binary_to_list(unicode:characters_to_binary(NormalizedWord))}),
   if
     IsBadWord ->
       "****";
@@ -53,14 +54,14 @@ filterMessageText(Lang, MessageText) ->
 
 start(_Host, Opts) ->
   Blacklists = gen_mod:get_opt(blacklists, Opts, fun(A) -> A end, []),
-  lists:map(fun bloom_gen_server:start/1, Blacklists),
+  lists:map(fun banword_gen_server:start/1, Blacklists),
   CharMaps = gen_mod:get_opt(charmaps, Opts, fun(A) -> A end, []),
   lists:map(fun normalize_leet_gen_server:start/1, CharMaps),
   ejabberd_hooks:add(filter_packet, global, ?MODULE, on_filter_packet, 0),
   ok.
 
 stop(_Host) ->
-  bloom_gen_server:stop(),
+  banword_gen_server:stop(),
   normalize_leet_gen_server:stop(),
   ejabberd_hooks:delete(filter_packet, global, ?MODULE, on_filter_packet, 0),
   ok.
