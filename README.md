@@ -9,3 +9,5 @@ This is a forked repository of ejabberd-contrib.
   bloom check only "kkk"
   banword_gen_server check "kkkk", "kkkkkk", "kkk..." all words including "kkk"
   ```
+
+- not use "etbloom" anymore. so you don't need to install bitarray. It is a rescue from install hell.
